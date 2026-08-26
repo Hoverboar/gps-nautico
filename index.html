@@ -23,7 +23,6 @@ font-family:Arial;
 }
 
 
-
 .topo{
 
 height:60px;
@@ -121,7 +120,7 @@ padding:15px;
 
 border-radius:10px;
 
-z-index:2000;
+z-index:3000;
 
 }
 
@@ -136,6 +135,30 @@ padding:12px;
 margin:8px;
 
 border-radius:8px;
+
+font-size:18px;
+
+}
+
+
+
+#centroGPS{
+
+position:absolute;
+
+bottom:95px;
+
+left:50%;
+
+transform:translateX(-50%);
+
+background:white;
+
+padding:12px 18px;
+
+border-radius:25px;
+
+z-index:2000;
 
 font-size:18px;
 
@@ -160,6 +183,7 @@ font-size:18px;
 <div id="mapa"></div>
 
 
+
 <div id="lista">
 
 <h2>🛥 Trilhas</h2>
@@ -174,6 +198,25 @@ Fechar
 </button>
 
 </div>
+
+
+
+<div id="centroGPS">
+
+Centro autom.
+
+<input type="radio" name="gps" onclick="ativarGPS(true)">
+
+sim
+
+
+<input type="radio" name="gps" checked onclick="ativarGPS(false)">
+
+não
+
+
+</div>
+
 
 
 <input 
@@ -203,7 +246,8 @@ onchange="importarGPX(event)"
 
 
 </div>
-<script>
+
+ <script>
 
 
 let mapa = L.map('mapa').setView([-25,-48],13);
@@ -219,13 +263,18 @@ maxZoom:19
 
 
 
-let trilhaAtual = null;
+let trilhaAtual=null;
 
-
-
-let trilhas = JSON.parse(
+let trilhas =
+JSON.parse(
 localStorage.getItem("trilhasGPS")
 ) || [];
+
+
+
+let marcadorGPS=null;
+
+let seguirGPS=false;
 
 
 
@@ -234,24 +283,19 @@ localStorage.getItem("trilhasGPS")
 function importarGPX(event){
 
 
-let arquivo = event.target.files[0];
+let arquivo=event.target.files[0];
 
 
-if(!arquivo) return;
+if(!arquivo)return;
 
 
-
-let leitor = new FileReader();
+let leitor=new FileReader();
 
 
 
 leitor.onload=function(e){
 
-
-lerArquivoGPX(
-e.target.result
-);
-
+lerGPX(e.target.result);
 
 };
 
@@ -260,20 +304,18 @@ e.target.result
 leitor.readAsText(arquivo);
 
 
-
 }
 
 
 
 
-function lerArquivoGPX(texto){
+
+function lerGPX(texto){
 
 
-let xml = new DOMParser()
-.parseFromString(
-texto,
-"text/xml"
-);
+let xml =
+new DOMParser()
+.parseFromString(texto,"text/xml");
 
 
 
@@ -289,21 +331,19 @@ trilhas=[];
 for(let i=0;i<tracks.length;i++){
 
 
+let nome="Trilha "+(i+1);
 
-let nome =
+
+
+let n =
 tracks[i]
 .getElementsByTagName("name")[0];
 
 
 
-if(nome){
+if(n){
 
-nome=nome.textContent;
-
-}
-else{
-
-nome="Trilha "+(i+1);
+nome=n.textContent;
 
 }
 
@@ -313,31 +353,32 @@ let pontos=[];
 
 
 
-let pontosXML =
+let pts =
 tracks[i]
 .getElementsByTagName("trkpt");
 
 
 
-for(let j=0;j<pontosXML.length;j++){
+for(let j=0;j<pts.length;j++){
 
 
 pontos.push([
 
+
 parseFloat(
-pontosXML[j].getAttribute("lat")
+pts[j].getAttribute("lat")
 ),
 
 
 parseFloat(
-pontosXML[j].getAttribute("lon")
+pts[j].getAttribute("lon")
 )
+
 
 ]);
 
 
 }
-
 
 
 
@@ -351,7 +392,6 @@ pontos:pontos
 
 
 }
-
 
 
 
@@ -373,6 +413,7 @@ trilhas.length+
 );
 
 
+
 abrirLista();
 
 
@@ -381,12 +422,12 @@ abrirLista();
 
 
 
+
 function abrirLista(){
 
 
-let div =
+let lista =
 document.getElementById("lista");
-
 
 let itens =
 document.getElementById("listaItens");
@@ -397,63 +438,67 @@ itens.innerHTML="";
 
 
 
-trilhas.forEach(
-function(t,index){
+trilhas.forEach(function(t,i){
 
 
-let b=document.createElement("div");
+let div =
+document.createElement("div");
 
 
-b.className="item";
+
+div.className="item";
 
 
-b.innerHTML=
+
+div.innerHTML=
+
 "🟢 "+t.nome+
 "<br>Pontos: "+
 t.pontos.length;
 
 
 
-b.onclick=function(){
+div.onclick=function(){
 
-carregarTrilha(index);
+carregarTrilha(i);
 
 };
 
 
 
-itens.appendChild(b);
+itens.appendChild(div);
+
+
+});
+
+
+
+lista.style.display="block";
 
 
 }
 
-);
-
-
-
-div.style.display="block";
-
-
-}
 
 
 
 
 function fecharLista(){
 
+
 document.getElementById("lista")
 .style.display="none";
+
 
 }
 
 
 
 
-function carregarTrilha(index){
+
+function carregarTrilha(i){
 
 
-let t =
-trilhas[index];
+let t=trilhas[i];
 
 
 
@@ -493,7 +538,131 @@ fecharLista();
 
 }
 
- </script>
+  function ativarGPS(valor){
+
+seguirGPS=valor;
+
+
+if(valor){
+
+iniciarGPS();
+
+}
+
+}
+
+
+
+
+
+function iniciarGPS(){
+
+
+if(!navigator.geolocation){
+
+alert("GPS não disponível");
+
+return;
+
+}
+
+
+
+navigator.geolocation.watchPosition(
+
+
+function(pos){
+
+
+let lat =
+pos.coords.latitude;
+
+
+let lon =
+pos.coords.longitude;
+
+
+
+if(!marcadorGPS){
+
+
+marcadorGPS =
+L.marker(
+
+[lat,lon],
+
+{
+
+title:"Minha posição"
+
+}
+
+).addTo(mapa);
+
+
+
+}else{
+
+
+marcadorGPS.setLatLng(
+
+[lat,lon]
+
+);
+
+
+}
+
+
+
+if(seguirGPS){
+
+
+mapa.setView(
+
+[lat,lon],
+
+16
+
+);
+
+
+}
+
+
+},
+
+
+
+function(){
+
+alert(
+"Permita o acesso ao GPS"
+);
+
+},
+
+
+
+{
+
+enableHighAccuracy:true,
+
+maximumAge:1000
+
+}
+
+
+
+);
+
+
+}
+
+
+
+
+</script>
 
 
 </body>
