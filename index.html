@@ -23,6 +23,7 @@ font-family:Arial;
 }
 
 
+
 .topo{
 
 height:60px;
@@ -36,6 +37,7 @@ justify-content:center;
 font-size:25px;
 
 }
+
 
 
 #mapa{
@@ -79,7 +81,7 @@ color:white;
 
 border:0;
 
-padding:15px;
+padding:14px;
 
 border-radius:12px;
 
@@ -89,7 +91,15 @@ font-size:17px;
 
 
 
-#listaTrilhas{
+input{
+
+display:none;
+
+}
+
+
+
+#lista{
 
 display:none;
 
@@ -101,6 +111,10 @@ left:10px;
 
 right:10px;
 
+max-height:70vh;
+
+overflow:auto;
+
 background:white;
 
 padding:15px;
@@ -109,14 +123,21 @@ border-radius:10px;
 
 z-index:2000;
 
-box-shadow:0 0 10px #555;
-
 }
 
 
-input{
 
-display:none;
+.item{
+
+background:#ddd;
+
+padding:12px;
+
+margin:8px;
+
+border-radius:8px;
+
+font-size:18px;
 
 }
 
@@ -139,28 +160,23 @@ display:none;
 <div id="mapa"></div>
 
 
-<div id="listaTrilhas">
+<div id="lista">
 
-<h2>Gerenciador de Rotas</h2>
+<h2>🛥 Trilhas</h2>
+
+<div id="listaItens"></div>
 
 
-<button onclick="fecharTrilhas()">
+<button onclick="fecharLista()">
+
 Fechar
+
 </button>
-
-
-<hr>
-
-
-<p>🟢 valter</p>
-
-<p>🟢 biguá plataforma antiga</p>
-
 
 </div>
 
 
-<input
+<input 
 id="arquivoGPX"
 type="file"
 accept=".gpx"
@@ -171,11 +187,12 @@ onchange="importarGPX(event)"
 <div class="menu">
 
 
-<button onclick="abrirTrilhas()">
+<button onclick="abrirLista()">
 
 🛥 Trilhas
 
 </button>
+
 
 
 <button onclick="document.getElementById('arquivoGPX').click()">
@@ -202,23 +219,14 @@ maxZoom:19
 
 
 
-let trilha = null;
+let trilhaAtual = null;
 
 
 
-function abrirTrilhas(){
+let trilhas = JSON.parse(
+localStorage.getItem("trilhasGPS")
+) || [];
 
-document.getElementById("listaTrilhas").style.display="block";
-
-}
-
-
-
-function fecharTrilhas(){
-
-document.getElementById("listaTrilhas").style.display="none";
-
-}
 
 
 
@@ -229,9 +237,8 @@ function importarGPX(event){
 let arquivo = event.target.files[0];
 
 
-if(!arquivo){
-return;
-}
+if(!arquivo) return;
+
 
 
 let leitor = new FileReader();
@@ -241,7 +248,9 @@ let leitor = new FileReader();
 leitor.onload=function(e){
 
 
-mostrarTrilha(e.target.result, arquivo.name);
+lerArquivoGPX(
+e.target.result
+);
 
 
 };
@@ -251,17 +260,52 @@ mostrarTrilha(e.target.result, arquivo.name);
 leitor.readAsText(arquivo);
 
 
+
 }
 
 
 
 
-
-function mostrarTrilha(texto,nome){
+function lerArquivoGPX(texto){
 
 
 let xml = new DOMParser()
-.parseFromString(texto,"text/xml");
+.parseFromString(
+texto,
+"text/xml"
+);
+
+
+
+let tracks =
+xml.getElementsByTagName("trk");
+
+
+
+trilhas=[];
+
+
+
+for(let i=0;i<tracks.length;i++){
+
+
+
+let nome =
+tracks[i]
+.getElementsByTagName("name")[0];
+
+
+
+if(nome){
+
+nome=nome.textContent;
+
+}
+else{
+
+nome="Trilha "+(i+1);
+
+}
 
 
 
@@ -269,35 +313,27 @@ let pontos=[];
 
 
 
-let lista =
-xml.getElementsByTagName("trkpt");
+let pontosXML =
+tracks[i]
+.getElementsByTagName("trkpt");
 
 
 
-for(let i=0;i<lista.length;i++){
+for(let j=0;j<pontosXML.length;j++){
 
 
-let lat =
+pontos.push([
+
 parseFloat(
-lista[i].getAttribute("lat")
-);
+pontosXML[j].getAttribute("lat")
+),
 
 
-
-let lon =
 parseFloat(
-lista[i].getAttribute("lon")
-);
+pontosXML[j].getAttribute("lon")
+)
 
-
-
-pontos.push(
-[
-lat,
-lon
-]
-);
-
+]);
 
 
 }
@@ -305,22 +341,141 @@ lon
 
 
 
-if(trilha){
+trilhas.push({
 
-mapa.removeLayer(trilha);
+nome:nome,
+
+pontos:pontos
+
+});
+
 
 }
 
 
 
-trilha =
+
+localStorage.setItem(
+
+"trilhasGPS",
+
+JSON.stringify(trilhas)
+
+);
+
+
+
+alert(
+
+trilhas.length+
+" trilhas salvas"
+
+);
+
+
+abrirLista();
+
+
+}
+
+
+
+
+function abrirLista(){
+
+
+let div =
+document.getElementById("lista");
+
+
+let itens =
+document.getElementById("listaItens");
+
+
+
+itens.innerHTML="";
+
+
+
+trilhas.forEach(
+function(t,index){
+
+
+let b=document.createElement("div");
+
+
+b.className="item";
+
+
+b.innerHTML=
+"🟢 "+t.nome+
+"<br>Pontos: "+
+t.pontos.length;
+
+
+
+b.onclick=function(){
+
+carregarTrilha(index);
+
+};
+
+
+
+itens.appendChild(b);
+
+
+}
+
+);
+
+
+
+div.style.display="block";
+
+
+}
+
+
+
+
+function fecharLista(){
+
+document.getElementById("lista")
+.style.display="none";
+
+}
+
+
+
+
+function carregarTrilha(index){
+
+
+let t =
+trilhas[index];
+
+
+
+if(trilhaAtual){
+
+mapa.removeLayer(trilhaAtual);
+
+}
+
+
+
+trilhaAtual =
 L.polyline(
 
-pontos,
+t.pontos,
 
 {
+
 color:"red",
+
 weight:5
+
 }
 
 ).addTo(mapa);
@@ -328,16 +483,19 @@ weight:5
 
 
 mapa.fitBounds(
-trilha.getBounds()
+trilhaAtual.getBounds()
 );
 
 
 
+fecharLista();
+
+
 }
-</script>
+
+ </script>
 
 
 </body>
 
 </html>
- 
