@@ -4,9 +4,11 @@
 <head>
 
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>GPS Náutico</title>
+
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
 
@@ -33,11 +35,15 @@ background:#8fd3e5;
 .topo{
 
 height:60px;
+
 background:#333;
+
 color:white;
 
 display:flex;
+
 align-items:center;
+
 justify-content:center;
 
 font-size:25px;
@@ -59,6 +65,8 @@ height:calc(100vh - 140px);
 position:fixed;
 
 bottom:0;
+
+left:0;
 
 width:100%;
 
@@ -96,14 +104,6 @@ font-size:18px;
 
 
 
-input{
-
-display:none;
-
-}
-
-
-
 .info{
 
 position:absolute;
@@ -125,6 +125,7 @@ font-size:14px;
 }
 
 
+
 </style>
 
 </head>
@@ -140,7 +141,6 @@ font-size:14px;
 </div>
 
 
-
 <div id="mapa"></div>
 
 
@@ -150,6 +150,13 @@ Nenhuma trilha carregada
 
 </div>
 
+
+<input 
+id="arquivoGPX"
+type="file"
+accept=".gpx"
+style="display:none"
+onchange="importarGPX(event)">
 
 
 <div class="menu">
@@ -163,31 +170,19 @@ Nenhuma trilha carregada
 
 
 
-<label>
-
-<button>
+<button onclick="document.getElementById('arquivoGPX').click()">
 
 📂 Importar GPX
 
 </button>
 
 
-<input 
-id="arquivoGPX"
-type="file"
-accept=".gpx"
-onchange="importarGPX(event)">
-
-
-</label>
-
-
 </div>
-
- <script>
+<script>
 
 
 let mapa = L.map('mapa').setView([-25,-48],13);
+
 
 
 L.tileLayer(
@@ -200,13 +195,13 @@ attribution:'OpenStreetMap'
 
 
 
-let trilha;
+let trilha = null;
 
 
 
 function abrirTrilhas(){
 
-alert("Lista de trilhas em desenvolvimento");
+alert("Lista de trilhas em breve");
 
 }
 
@@ -231,10 +226,10 @@ let leitor = new FileReader();
 
 
 
-leitor.onload=function(e){
+leitor.onload = function(e){
 
 
-let texto=e.target.result;
+let texto = e.target.result;
 
 
 
@@ -246,27 +241,27 @@ texto,
 
 
 
-let pontos=[];
-
-
-let pontosGPX =
-xml.getElementsByTagName("trkpt");
+let pontos = [];
 
 
 
-for(let i=0;i<pontosGPX.length;i++){
+let lista = xml.getElementsByTagName("trkpt");
+
+
+
+for(let i=0;i<lista.length;i++){
 
 
 let lat =
 parseFloat(
-pontosGPX[i].getAttribute("lat")
+lista[i].getAttribute("lat")
 );
 
 
 
 let lon =
 parseFloat(
-pontosGPX[i].getAttribute("lon")
+lista[i].getAttribute("lon")
 );
 
 
@@ -277,6 +272,7 @@ lat,
 lon
 ]
 );
+
 
 
 }
@@ -335,11 +331,6 @@ leitor.readAsText(arquivo);
 
 }
 
-
-
-</script>
-
-
+ </script>
 </body>
-
 </html>
