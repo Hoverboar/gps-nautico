@@ -45,24 +45,30 @@ height:calc(100vh - 140px);
 }
 
 
+
 .menu{
 
 position:fixed;
+
 bottom:0;
 left:0;
 
 width:100%;
+
 height:80px;
 
 background:#444;
 
 display:flex;
+
 justify-content:space-around;
+
 align-items:center;
 
 z-index:1000;
 
 }
+
 
 
 button{
@@ -82,10 +88,6 @@ font-size:17px;
 }
 
 
-input{
-display:none;
-}
-
 
 #listaTrilhas{
 
@@ -94,7 +96,9 @@ display:none;
 position:absolute;
 
 top:70px;
+
 left:10px;
+
 right:10px;
 
 background:white;
@@ -104,6 +108,15 @@ padding:15px;
 border-radius:10px;
 
 z-index:2000;
+
+box-shadow:0 0 10px #555;
+
+}
+
+
+input{
+
+display:none;
 
 }
 
@@ -132,24 +145,27 @@ z-index:2000;
 
 
 <button onclick="fecharTrilhas()">
-❌ Fechar
+Fechar
 </button>
 
 
 <hr>
 
 
-<p>
-🟢 valter
-</p>
+<p>🟢 valter</p>
 
-
-<p>
-🟢 biguá plataforma antiga
-</p>
+<p>🟢 biguá plataforma antiga</p>
 
 
 </div>
+
+
+<input
+id="arquivoGPX"
+type="file"
+accept=".gpx"
+onchange="importarGPX(event)"
+>
 
 
 <div class="menu">
@@ -160,14 +176,6 @@ z-index:2000;
 🛥 Trilhas
 
 </button>
-
-
-<input
-id="arquivoGPX"
-type="file"
-accept=".gpx"
-onchange="importarGPX(event)"
->
 
 
 <button onclick="document.getElementById('arquivoGPX').click()">
@@ -221,21 +229,9 @@ function importarGPX(event){
 let arquivo = event.target.files[0];
 
 
-if(!arquivo)
+if(!arquivo){
 return;
-
-
-
-lerGPX(arquivo);
-
-
-
 }
-
-
-
-
-function lerGPX(arquivo){
 
 
 let leitor = new FileReader();
@@ -245,23 +241,23 @@ let leitor = new FileReader();
 leitor.onload=function(e){
 
 
-mostrarGPX(e.target.result, arquivo.name);
+mostrarTrilha(e.target.result, arquivo.name);
 
 
-}
+};
 
 
 
 leitor.readAsText(arquivo);
 
 
-
 }
 
 
 
 
-function mostrarGPX(texto,nome){
+
+function mostrarTrilha(texto,nome){
 
 
 let xml = new DOMParser()
@@ -281,17 +277,27 @@ xml.getElementsByTagName("trkpt");
 for(let i=0;i<lista.length;i++){
 
 
-pontos.push([
-
+let lat =
 parseFloat(
 lista[i].getAttribute("lat")
-),
+);
 
+
+
+let lon =
 parseFloat(
 lista[i].getAttribute("lon")
-)
+);
 
-]);
+
+
+pontos.push(
+[
+lat,
+lon
+]
+);
+
 
 
 }
@@ -304,7 +310,6 @@ if(trilha){
 mapa.removeLayer(trilha);
 
 }
-
 
 
 
@@ -328,16 +333,11 @@ trilha.getBounds()
 
 
 
-alert(
-"Trilha carregada:\n"+nome
-);
-
-
-
 }
- </script>
+</script>
 
 
 </body>
 
 </html>
+ 
