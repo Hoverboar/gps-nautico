@@ -38,7 +38,6 @@ font-size:25px;
 }
 
 
-
 #mapa{
 
 height:calc(100vh - 140px);
@@ -167,7 +166,6 @@ font-size:18px;
 }
 
 
-
 </style>
 
 </head>
@@ -207,9 +205,7 @@ Fechar
 
 
 
-
 <div id="centroGPS">
-
 
 Centro autom.
 
@@ -277,8 +273,7 @@ onchange="importarGPX(event)"
  <script>
 
 
-let mapa = L.map('mapa')
-.setView([-22.5,-48],10);
+let mapa = L.map('mapa').setView([-25,-48],13);
 
 
 
@@ -287,9 +282,7 @@ L.tileLayer(
 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
 
 {
-
 maxZoom:19
-
 }
 
 ).addTo(mapa);
@@ -302,12 +295,15 @@ let marcadorGPS=null;
 
 let seguirGPS=false;
 
+let trilhas=[];
 
 
-let trilhas = JSON.parse(
 
+
+
+trilhas =
+JSON.parse(
 localStorage.getItem("trilhasGPS")
-
 ) || [];
 
 
@@ -325,14 +321,17 @@ if(!arquivo)return;
 
 
 
-let leitor=new FileReader();
+let leitor =
+new FileReader();
 
 
 
 leitor.onload=function(e){
 
 
-lerGPX(e.target.result);
+lerGPX(
+e.target.result
+);
 
 
 };
@@ -353,7 +352,10 @@ function lerGPX(texto){
 
 let xml =
 new DOMParser()
-.parseFromString(texto,"text/xml");
+.parseFromString(
+texto,
+"text/xml"
+);
 
 
 
@@ -369,7 +371,8 @@ trilhas=[];
 for(let i=0;i<tracks.length;i++){
 
 
-let nome="Trilha "+(i+1);
+let nome =
+"Trilha "+(i+1);
 
 
 
@@ -381,7 +384,8 @@ tracks[i]
 
 if(nomeTag){
 
-nome=nomeTag.textContent;
+nome =
+nomeTag.textContent;
 
 }
 
@@ -400,20 +404,21 @@ tracks[i]
 for(let j=0;j<pts.length;j++){
 
 
-let lat =
+
+pontos.push([
+
+
 parseFloat(
 pts[j].getAttribute("lat")
-);
+),
 
 
-let lon =
 parseFloat(
 pts[j].getAttribute("lon")
-);
+)
 
 
-
-pontos.push([lat,lon]);
+]);
 
 
 }
@@ -481,7 +486,6 @@ itens.innerHTML="";
 trilhas.forEach(function(t,i){
 
 
-
 let div =
 document.createElement("div");
 
@@ -538,10 +542,12 @@ document.getElementById("lista")
 
 
 
+
 function carregarTrilha(i){
 
 
-let t=trilhas[i];
+let t =
+trilhas[i];
 
 
 
@@ -578,24 +584,35 @@ trilhaAtual.getBounds()
 
 
 
-// mostra opção somente agora
+// mostra opção
 
-document.getElementById(
-"centroGPS"
-).style.display="block";
+let opcao =
+document.getElementById("centroGPS");
 
 
-// inicia sempre em NÃO
+opcao.style.display="block";
+
+
+
+// inicia em NÃO
 
 document.querySelector(
-
 'input[value="nao"]'
-
 ).checked=true;
 
 
 
 seguirGPS=false;
+
+
+
+setTimeout(function(){
+
+
+opcao.style.display="none";
+
+
+},5000);
 
 
 
@@ -616,7 +633,6 @@ iniciarGPS();
 }
 
 }
-
 
 
 
@@ -696,14 +712,15 @@ mapa.setView(
 }
 
 
-
 },
 
 
 
 function(){
 
-alert("Ative a localização do celular");
+alert(
+"Permita o GPS do celular"
+);
 
 },
 
