@@ -26,11 +26,15 @@ font-family:Arial;
 .topo{
 
 height:60px;
+
 background:#333;
+
 color:white;
 
 display:flex;
+
 align-items:center;
+
 justify-content:center;
 
 font-size:25px;
@@ -52,6 +56,7 @@ height:calc(100vh - 140px);
 position:fixed;
 
 bottom:0;
+
 left:0;
 
 width:100%;
@@ -146,13 +151,23 @@ font-size:18px;
 
 display:none;
 
-margin-top:15px;
+position:absolute;
 
-background:#eee;
+bottom:95px;
 
-padding:10px;
+left:50%;
 
-border-radius:10px;
+transform:translateX(-50%);
+
+background:white;
+
+padding:12px 20px;
+
+border-radius:25px;
+
+z-index:3000;
+
+font-size:18px;
 
 }
 
@@ -178,9 +193,7 @@ border-radius:10px;
 
 <div id="lista">
 
-
 <h2>🛥 Trilhas</h2>
-
 
 <div id="listaItens"></div>
 
@@ -192,16 +205,18 @@ Fechar
 </button>
 
 
+</div>
+
+
 
 <div id="centroGPS">
-
 
 Centro autom.
 
 
 <label>
 
-<input
+<input 
 type="radio"
 name="gps"
 onclick="ativarGPS(true)">
@@ -214,7 +229,7 @@ sim
 
 <label>
 
-<input
+<input 
 type="radio"
 name="gps"
 checked
@@ -227,9 +242,6 @@ não
 
 </div>
 
-
-
-</div>
 
 
 <input
@@ -283,6 +295,7 @@ let marcadorGPS=null;
 
 let seguirGPS=false;
 
+let tempoOption;
 
 
 let trilhas =
@@ -434,6 +447,7 @@ abrirLista();
 
 
 
+
 function abrirLista(){
 
 
@@ -507,6 +521,7 @@ document.getElementById("lista")
 
 
 
+
 function carregarTrilha(i){
 
 
@@ -545,19 +560,48 @@ trilhaAtual.getBounds()
 
 
 
-document.getElementById("centroGPS")
-.style.display="block";
-
-
-
 fecharLista();
 
 
 }
 
-  function ativarGPS(valor){
+  mapa.on('click', function(){
 
-seguirGPS = valor;
+
+let op =
+document.getElementById("centroGPS");
+
+
+
+op.style.display="block";
+
+
+
+clearTimeout(tempoOption);
+
+
+
+tempoOption=setTimeout(function(){
+
+
+op.style.display="none";
+
+
+},5000);
+
+
+
+});
+
+
+
+
+
+function ativarGPS(valor){
+
+
+seguirGPS=valor;
+
 
 
 if(valor){
@@ -566,7 +610,9 @@ iniciarGPS();
 
 }
 
+
 }
+
 
 
 
@@ -575,6 +621,7 @@ function iniciarGPS(){
 
 
 if(!navigator.geolocation){
+
 
 alert("GPS não disponível");
 
@@ -652,9 +699,9 @@ mapa.setView(
 
 function(){
 
-alert(
-"Permita o GPS do celular"
-);
+
+alert("Permita o GPS do celular");
+
 
 },
 
