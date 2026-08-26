@@ -24,7 +24,6 @@ font-family:Arial;
 
 
 .topo{
-
 height:60px;
 background:#333;
 color:white;
@@ -34,15 +33,12 @@ align-items:center;
 justify-content:center;
 
 font-size:25px;
-
 }
 
 
 
 #mapa{
-
 height:calc(100vh - 140px);
-
 }
 
 
@@ -50,20 +46,16 @@ height:calc(100vh - 140px);
 .menu{
 
 position:fixed;
-
 bottom:0;
 left:0;
 
 width:100%;
-
 height:80px;
 
 background:#444;
 
 display:flex;
-
 justify-content:space-around;
-
 align-items:center;
 
 z-index:1000;
@@ -80,7 +72,7 @@ color:white;
 
 border:0;
 
-padding:14px;
+padding:14px 25px;
 
 border-radius:12px;
 
@@ -90,7 +82,7 @@ font-size:17px;
 
 
 
-input{
+input[type="file"]{
 
 display:none;
 
@@ -110,11 +102,11 @@ left:10px;
 
 right:10px;
 
+background:white;
+
 max-height:70vh;
 
 overflow:auto;
-
-background:white;
 
 padding:15px;
 
@@ -142,6 +134,8 @@ font-size:18px;
 
 
 
+/* opção centro automático */
+
 #centroGPS{
 
 position:absolute;
@@ -154,7 +148,7 @@ transform:translateX(-50%);
 
 background:white;
 
-padding:12px 18px;
+padding:12px 20px;
 
 border-radius:25px;
 
@@ -163,6 +157,7 @@ z-index:2000;
 font-size:18px;
 
 }
+
 
 
 </style>
@@ -183,6 +178,31 @@ font-size:18px;
 <div id="mapa"></div>
 
 
+<div id="centroGPS">
+
+Centro autom.
+
+<label>
+<input 
+type="radio"
+name="gps"
+onclick="ativarGPS(true)">
+sim
+</label>
+
+
+<label>
+<input 
+type="radio"
+name="gps"
+checked
+onclick="ativarGPS(false)">
+não
+</label>
+
+
+</div>
+
 
 <div id="lista">
 
@@ -190,33 +210,11 @@ font-size:18px;
 
 <div id="listaItens"></div>
 
-
 <button onclick="fecharLista()">
-
 Fechar
-
 </button>
 
 </div>
-
-
-
-<div id="centroGPS">
-
-Centro autom.
-
-<input type="radio" name="gps" onclick="ativarGPS(true)">
-
-sim
-
-
-<input type="radio" name="gps" checked onclick="ativarGPS(false)">
-
-não
-
-
-</div>
-
 
 
 <input 
@@ -229,13 +227,11 @@ onchange="importarGPX(event)"
 
 <div class="menu">
 
-
 <button onclick="abrirLista()">
 
 🛥 Trilhas
 
 </button>
-
 
 
 <button onclick="document.getElementById('arquivoGPX').click()">
@@ -263,7 +259,13 @@ maxZoom:19
 
 
 
-let trilhaAtual=null;
+let trilhaAtual = null;
+
+let marcadorGPS = null;
+
+let seguirGPS = false;
+
+
 
 let trilhas =
 JSON.parse(
@@ -272,24 +274,19 @@ localStorage.getItem("trilhasGPS")
 
 
 
-let marcadorGPS=null;
-
-let seguirGPS=false;
-
-
-
 
 
 function importarGPX(event){
 
 
-let arquivo=event.target.files[0];
+let arquivo = event.target.files[0];
 
 
 if(!arquivo)return;
 
 
-let leitor=new FileReader();
+
+let leitor = new FileReader();
 
 
 
@@ -302,6 +299,7 @@ lerGPX(e.target.result);
 
 
 leitor.readAsText(arquivo);
+
 
 
 }
@@ -331,19 +329,20 @@ trilhas=[];
 for(let i=0;i<tracks.length;i++){
 
 
+
 let nome="Trilha "+(i+1);
 
 
 
-let n =
+let nomeXML =
 tracks[i]
 .getElementsByTagName("name")[0];
 
 
 
-if(n){
+if(nomeXML){
 
-nome=n.textContent;
+nome=nomeXML.textContent;
 
 }
 
@@ -362,6 +361,7 @@ tracks[i]
 for(let j=0;j<pts.length;j++){
 
 
+
 pontos.push([
 
 
@@ -376,6 +376,7 @@ pts[j].getAttribute("lon")
 
 
 ]);
+
 
 
 }
@@ -406,10 +407,8 @@ JSON.stringify(trilhas)
 
 
 alert(
-
 trilhas.length+
 " trilhas salvas"
-
 );
 
 
@@ -429,6 +428,7 @@ function abrirLista(){
 let lista =
 document.getElementById("lista");
 
+
 let itens =
 document.getElementById("listaItens");
 
@@ -441,6 +441,7 @@ itens.innerHTML="";
 trilhas.forEach(function(t,i){
 
 
+
 let div =
 document.createElement("div");
 
@@ -450,7 +451,7 @@ div.className="item";
 
 
 
-div.innerHTML=
+div.innerHTML =
 
 "🟢 "+t.nome+
 "<br>Pontos: "+
@@ -467,6 +468,7 @@ carregarTrilha(i);
 
 
 itens.appendChild(div);
+
 
 
 });
@@ -498,7 +500,8 @@ document.getElementById("lista")
 function carregarTrilha(i){
 
 
-let t=trilhas[i];
+let t =
+trilhas[i];
 
 
 
@@ -540,7 +543,7 @@ fecharLista();
 
   function ativarGPS(valor){
 
-seguirGPS=valor;
+seguirGPS = valor;
 
 
 if(valor){
@@ -550,7 +553,6 @@ iniciarGPS();
 }
 
 }
-
 
 
 
@@ -574,20 +576,16 @@ navigator.geolocation.watchPosition(
 function(pos){
 
 
-let lat =
-pos.coords.latitude;
+let lat = pos.coords.latitude;
 
-
-let lon =
-pos.coords.longitude;
+let lon = pos.coords.longitude;
 
 
 
 if(!marcadorGPS){
 
 
-marcadorGPS =
-L.marker(
+marcadorGPS = L.marker(
 
 [lat,lon],
 
@@ -637,7 +635,7 @@ mapa.setView(
 function(){
 
 alert(
-"Permita o acesso ao GPS"
+"Permita o GPS do celular"
 );
 
 },
@@ -658,7 +656,6 @@ maximumAge:1000
 
 
 }
-
 
 
 
