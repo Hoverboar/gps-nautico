@@ -26,16 +26,21 @@ font-family:Arial;
 .topo{
 
 height:60px;
+
 background:#333;
+
 color:white;
 
 display:flex;
+
 align-items:center;
+
 justify-content:center;
 
 font-size:25px;
 
 }
+
 
 
 #mapa{
@@ -51,6 +56,7 @@ height:calc(100vh - 140px);
 position:fixed;
 
 bottom:0;
+
 left:0;
 
 width:100%;
@@ -89,7 +95,7 @@ font-size:17px;
 
 
 
-input[type="file"]{
+input[type=file]{
 
 display:none;
 
@@ -187,9 +193,7 @@ font-size:18px;
 
 <div id="lista">
 
-
 <h2>🛥 Trilhas</h2>
-
 
 <div id="listaItens"></div>
 
@@ -199,7 +203,6 @@ font-size:18px;
 Fechar
 
 </button>
-
 
 </div>
 
@@ -212,10 +215,7 @@ Centro autom.
 
 <label>
 
-<input
-type="radio"
-name="gps"
-value="sim"
+<input type="radio" name="gps" value="sim"
 onclick="ativarGPS(true)">
 
 sim
@@ -225,11 +225,7 @@ sim
 
 <label>
 
-<input
-type="radio"
-name="gps"
-value="nao"
-checked
+<input type="radio" name="gps" value="nao" checked
 onclick="ativarGPS(false)">
 
 não
@@ -241,12 +237,10 @@ não
 
 
 
-<input
-id="arquivoGPX"
+<input id="arquivoGPX"
 type="file"
 accept=".gpx"
-onchange="importarGPX(event)"
->
+onchange="importarGPX(event)">
 
 
 
@@ -258,7 +252,6 @@ onchange="importarGPX(event)"
 🛥 Trilhas
 
 </button>
-
 
 
 <button onclick="document.getElementById('arquivoGPX').click()">
@@ -273,7 +266,8 @@ onchange="importarGPX(event)"
  <script>
 
 
-let mapa = L.map('mapa').setView([-25,-48],13);
+let mapa = L.map('mapa')
+.setView([-25,-48],13);
 
 
 
@@ -282,28 +276,29 @@ L.tileLayer(
 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
 
 {
+
 maxZoom:19
+
 }
 
 ).addTo(mapa);
 
 
 
-let trilhaAtual=null;
+let trilhaAtual = null;
 
-let marcadorGPS=null;
+let pontosMapa = [];
 
-let seguirGPS=false;
+let bandeira = null;
 
-let trilhas=[];
+let marcadorGPS = null;
 
+let seguirGPS = false;
 
+let trilhas = JSON.parse(
 
-
-
-trilhas =
-JSON.parse(
 localStorage.getItem("trilhasGPS")
+
 ) || [];
 
 
@@ -313,25 +308,21 @@ localStorage.getItem("trilhasGPS")
 function importarGPX(event){
 
 
-let arquivo =
-event.target.files[0];
+let arquivo = event.target.files[0];
 
 
 if(!arquivo)return;
 
 
 
-let leitor =
-new FileReader();
+let leitor = new FileReader();
 
 
 
 leitor.onload=function(e){
 
 
-lerGPX(
-e.target.result
-);
+lerGPX(e.target.result);
 
 
 };
@@ -352,10 +343,7 @@ function lerGPX(texto){
 
 let xml =
 new DOMParser()
-.parseFromString(
-texto,
-"text/xml"
-);
+.parseFromString(texto,"text/xml");
 
 
 
@@ -404,7 +392,6 @@ tracks[i]
 for(let j=0;j<pts.length;j++){
 
 
-
 pontos.push([
 
 
@@ -449,10 +436,8 @@ JSON.stringify(trilhas)
 
 
 alert(
-
 trilhas.length+
 " trilhas salvas"
-
 );
 
 
@@ -461,7 +446,6 @@ abrirLista();
 
 
 }
-
 
 
 
@@ -486,6 +470,7 @@ itens.innerHTML="";
 trilhas.forEach(function(t,i){
 
 
+
 let div =
 document.createElement("div");
 
@@ -495,9 +480,9 @@ div.className="item";
 
 
 
-div.innerHTML=
+div.innerHTML =
 
-"🛥 "+t.nome+
+"🚤 "+t.nome+
 "<br>Pontos: "+
 t.pontos.length;
 
@@ -514,7 +499,6 @@ carregarTrilha(i);
 
 
 itens.appendChild(div);
-
 
 
 });
@@ -543,12 +527,7 @@ document.getElementById("lista")
 
 
 
-function carregarTrilha(i){
-
-
-let t =
-trilhas[i];
-
+function limparMapa(){
 
 
 if(trilhaAtual){
@@ -558,6 +537,39 @@ mapa.removeLayer(trilhaAtual);
 }
 
 
+pontosMapa.forEach(function(p){
+
+mapa.removeLayer(p);
+
+});
+
+
+pontosMapa=[];
+
+
+
+if(bandeira){
+
+mapa.removeLayer(bandeira);
+
+bandeira=null;
+
+}
+
+
+}
+
+  function carregarTrilha(i){
+
+
+let t = trilhas[i];
+
+
+limparMapa();
+
+
+
+// desenha linha
 
 trilhaAtual =
 L.polyline(
@@ -576,11 +588,76 @@ weight:5
 
 
 
+
+// desenha pontos
+
+t.pontos.forEach(function(p){
+
+
+let ponto =
+L.circleMarker(
+
+p,
+
+{
+
+radius:6,
+
+color:"red",
+
+fillColor:"red",
+
+fillOpacity:1
+
+}
+
+).addTo(mapa);
+
+
+
+pontosMapa.push(ponto);
+
+
+
+});
+
+
+
+
+// bandeira no início
+
+bandeira =
+L.marker(
+
+t.pontos[0],
+
+{
+
+icon:L.divIcon({
+
+html:"🚩",
+
+className:"",
+
+iconSize:[30,30]
+
+})
+
+}
+
+).addTo(mapa);
+
+
+
+
+// posiciona no caminho
+
 mapa.fitBounds(
 
 trilhaAtual.getBounds()
 
 );
+
 
 
 
@@ -593,8 +670,6 @@ document.getElementById("centroGPS");
 opcao.style.display="block";
 
 
-
-// inicia em NÃO
 
 document.querySelector(
 'input[value="nao"]'
@@ -621,9 +696,17 @@ fecharLista();
 
 }
 
-  function ativarGPS(valor){
 
-seguirGPS = valor;
+
+
+
+
+
+function ativarGPS(valor){
+
+
+seguirGPS=valor;
+
 
 
 if(valor){
@@ -633,6 +716,7 @@ iniciarGPS();
 }
 
 }
+
 
 
 
@@ -671,13 +755,7 @@ if(!marcadorGPS){
 marcadorGPS =
 L.marker(
 
-[lat,lon],
-
-{
-
-title:"Minha posição"
-
-}
+[lat,lon]
 
 ).addTo(mapa);
 
@@ -712,15 +790,14 @@ mapa.setView(
 }
 
 
+
 },
 
 
 
 function(){
 
-alert(
-"Permita o GPS do celular"
-);
+alert("Ative o GPS do celular");
 
 },
 
@@ -740,7 +817,6 @@ maximumAge:1000
 
 
 }
-
 
 
 </script>
