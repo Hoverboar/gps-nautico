@@ -26,15 +26,11 @@ font-family:Arial;
 .topo{
 
 height:60px;
-
 background:#333;
-
 color:white;
 
 display:flex;
-
 align-items:center;
-
 justify-content:center;
 
 font-size:25px;
@@ -54,21 +50,16 @@ height:calc(100vh - 140px);
 .menu{
 
 position:fixed;
-
 bottom:0;
-
 left:0;
 
 width:100%;
-
 height:80px;
 
 background:#444;
 
 display:flex;
-
 justify-content:space-around;
-
 align-items:center;
 
 z-index:1000;
@@ -171,7 +162,6 @@ font-size:18px;
 
 }
 
-
 </style>
 
 </head>
@@ -215,7 +205,9 @@ Centro autom.
 
 <label>
 
-<input type="radio" name="gps" value="sim"
+<input type="radio"
+name="gps"
+value="sim"
 onclick="ativarGPS(true)">
 
 sim
@@ -225,7 +217,10 @@ sim
 
 <label>
 
-<input type="radio" name="gps" value="nao" checked
+<input type="radio"
+name="gps"
+value="nao"
+checked
 onclick="ativarGPS(false)">
 
 não
@@ -237,10 +232,12 @@ não
 
 
 
-<input id="arquivoGPX"
+<input
+id="arquivoGPX"
 type="file"
 accept=".gpx"
-onchange="importarGPX(event)">
+onchange="importarGPX(event)"
+>
 
 
 
@@ -262,8 +259,7 @@ onchange="importarGPX(event)">
 
 
 </div>
-
- <script>
+<script>
 
 
 let mapa = L.map('mapa')
@@ -276,12 +272,16 @@ L.tileLayer(
 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
 
 {
-
 maxZoom:19
-
 }
 
 ).addTo(mapa);
+
+
+
+// ALTERE AQUI O ZOOM PADRÃO DAS TRILHAS
+
+let zoomTrilha = 16;
 
 
 
@@ -295,6 +295,8 @@ let marcadorGPS = null;
 
 let seguirGPS = false;
 
+
+
 let trilhas = JSON.parse(
 
 localStorage.getItem("trilhasGPS")
@@ -305,25 +307,26 @@ localStorage.getItem("trilhasGPS")
 
 
 
+
 function importarGPX(event){
 
 
-let arquivo = event.target.files[0];
+let arquivo =
+event.target.files[0];
 
 
 if(!arquivo)return;
 
 
 
-let leitor = new FileReader();
+let leitor =
+new FileReader();
 
 
 
 leitor.onload=function(e){
 
-
 lerGPX(e.target.result);
-
 
 };
 
@@ -394,16 +397,13 @@ for(let j=0;j<pts.length;j++){
 
 pontos.push([
 
-
 parseFloat(
 pts[j].getAttribute("lat")
 ),
 
-
 parseFloat(
 pts[j].getAttribute("lon")
 )
-
 
 ]);
 
@@ -451,6 +451,7 @@ abrirLista();
 
 
 
+
 function abrirLista(){
 
 
@@ -470,7 +471,6 @@ itens.innerHTML="";
 trilhas.forEach(function(t,i){
 
 
-
 let div =
 document.createElement("div");
 
@@ -480,7 +480,7 @@ div.className="item";
 
 
 
-div.innerHTML =
+div.innerHTML=
 
 "🚤 "+t.nome+
 "<br>Pontos: "+
@@ -490,9 +490,7 @@ t.pontos.length;
 
 div.onclick=function(){
 
-
 carregarTrilha(i);
-
 
 };
 
@@ -523,11 +521,7 @@ document.getElementById("lista")
 
 }
 
-
-
-
-
-function limparMapa(){
+ function limparMapa(){
 
 
 if(trilhaAtual){
@@ -535,6 +529,7 @@ if(trilhaAtual){
 mapa.removeLayer(trilhaAtual);
 
 }
+
 
 
 pontosMapa.forEach(function(p){
@@ -559,7 +554,11 @@ bandeira=null;
 
 }
 
-  function carregarTrilha(i){
+
+
+
+
+function carregarTrilha(i){
 
 
 let t = trilhas[i];
@@ -569,7 +568,7 @@ limparMapa();
 
 
 
-// desenha linha
+// linha da trilha
 
 trilhaAtual =
 L.polyline(
@@ -589,12 +588,13 @@ weight:5
 
 
 
-// desenha pontos
+// pontos da trilha
 
 t.pontos.forEach(function(p){
 
 
 let ponto =
+
 L.circleMarker(
 
 p,
@@ -624,9 +624,11 @@ pontosMapa.push(ponto);
 
 
 
+
 // bandeira no início
 
 bandeira =
+
 L.marker(
 
 t.pontos[0],
@@ -650,21 +652,27 @@ iconSize:[30,30]
 
 
 
-// posiciona no caminho
 
-mapa.fitBounds(
+// abre sempre neste zoom
 
-trilhaAtual.getBounds()
+mapa.setView(
+
+t.pontos[0],
+
+zoomTrilha
 
 );
 
 
 
 
-// mostra opção
+
+// mostra Centro autom.
 
 let opcao =
+
 document.getElementById("centroGPS");
+
 
 
 opcao.style.display="block";
@@ -672,7 +680,9 @@ opcao.style.display="block";
 
 
 document.querySelector(
+
 'input[value="nao"]'
+
 ).checked=true;
 
 
@@ -782,13 +792,12 @@ mapa.setView(
 
 [lat,lon],
 
-16
+zoomTrilha
 
 );
 
 
 }
-
 
 
 },
@@ -797,7 +806,7 @@ mapa.setView(
 
 function(){
 
-alert("Ative o GPS do celular");
+alert("Permita o GPS do celular");
 
 },
 
@@ -819,9 +828,11 @@ maximumAge:1000
 }
 
 
+
 </script>
 
 
 </body>
 
 </html>
+ 
