@@ -9,7 +9,6 @@
 
 <title>GPS Náutico</title>
 
-
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -24,25 +23,18 @@ font-family:Arial;
 
 
 .topo{
-
 height:60px;
 background:#333;
 color:white;
-
 display:flex;
 align-items:center;
 justify-content:center;
-
 font-size:25px;
-
 }
 
 
-
 #mapa{
-
 height:calc(100vh - 140px);
-
 }
 
 
@@ -51,11 +43,8 @@ height:calc(100vh - 140px);
 
 position:fixed;
 bottom:0;
-left:0;
-
 width:100%;
 height:80px;
-
 background:#444;
 
 display:flex;
@@ -71,7 +60,6 @@ z-index:1000;
 button{
 
 background:#1976d2;
-
 color:white;
 
 border:0;
@@ -86,9 +74,25 @@ font-size:17px;
 
 
 
-input[type=file]{
+/* painel zoom */
 
-display:none;
+#painelZoom{
+
+position:absolute;
+
+top:70px;
+
+right:10px;
+
+background:white;
+
+padding:10px;
+
+border-radius:10px;
+
+z-index:2000;
+
+font-size:18px;
 
 }
 
@@ -107,10 +111,6 @@ left:10px;
 right:10px;
 
 background:white;
-
-max-height:75vh;
-
-overflow:auto;
 
 padding:15px;
 
@@ -132,8 +132,6 @@ margin:8px;
 
 border-radius:8px;
 
-font-size:18px;
-
 }
 
 
@@ -152,13 +150,18 @@ transform:translateX(-50%);
 
 background:white;
 
-padding:12px 20px;
+padding:12px;
 
-border-radius:25px;
+border-radius:20px;
 
 z-index:3000;
 
-font-size:18px;
+}
+
+
+input[type=file]{
+
+display:none;
 
 }
 
@@ -171,14 +174,25 @@ font-size:18px;
 
 
 <div class="topo">
-
 🚤 GPS Náutico
-
 </div>
 
 
 <div id="mapa"></div>
 
+
+
+<div id="painelZoom">
+
+Zoom: <span id="valorZoom">16</span>
+
+<br><br>
+
+<button onclick="zoomMenos()">-</button>
+
+<button onclick="zoomMais()">+</button>
+
+</div>
 
 
 <div id="lista">
@@ -187,83 +201,49 @@ font-size:18px;
 
 <div id="listaItens"></div>
 
-
 <button onclick="fecharLista()">
-
 Fechar
-
 </button>
 
 </div>
-
 
 
 <div id="centroGPS">
 
 Centro autom.
 
-
-<label>
-
-<input type="radio"
-name="gps"
-value="sim"
-onclick="ativarGPS(true)">
-
+<input type="radio" name="gps" onclick="ativarGPS(true)">
 sim
 
-</label>
-
-
-<label>
-
-<input type="radio"
-name="gps"
-value="nao"
-checked
-onclick="ativarGPS(false)">
-
+<input type="radio" name="gps" checked onclick="ativarGPS(false)">
 não
-
-</label>
-
 
 </div>
 
 
-
-<input
-id="arquivoGPX"
-type="file"
-accept=".gpx"
-onchange="importarGPX(event)"
->
+<input id="arquivoGPX" type="file" accept=".gpx" onchange="importarGPX(event)">
 
 
 
 <div class="menu">
 
-
 <button onclick="abrirLista()">
-
 🛥 Trilhas
-
 </button>
 
 
 <button onclick="document.getElementById('arquivoGPX').click()">
-
 📂 Importar GPX
-
 </button>
 
 
 </div>
-<script>
+
+ <script>
 
 
 let mapa = L.map('mapa')
-.setView([-25,-48],13);
+.setView([-25,-48],16);
 
 
 
@@ -279,30 +259,67 @@ maxZoom:19
 
 
 
-// ALTERE AQUI O ZOOM PADRÃO DAS TRILHAS
+let trilhaAtual=null;
 
-let zoomTrilha = 16;
+let pontosMapa=[];
 
+let bandeira=null;
 
+let marcadorGPS=null;
 
-let trilhaAtual = null;
-
-let pontosMapa = [];
-
-let bandeira = null;
-
-let marcadorGPS = null;
-
-let seguirGPS = false;
+let seguirGPS=false;
 
 
-
-let trilhas = JSON.parse(
-
+let trilhas =
+JSON.parse(
 localStorage.getItem("trilhasGPS")
-
 ) || [];
 
+
+
+
+
+// mostra o zoom atual
+
+mapa.on('zoomend',function(){
+
+document.getElementById("valorZoom").innerHTML =
+mapa.getZoom();
+
+});
+
+
+
+
+
+function zoomMais(){
+
+let z=mapa.getZoom();
+
+
+if(z<19){
+
+mapa.setZoom(z+1);
+
+}
+
+}
+
+
+
+
+function zoomMenos(){
+
+let z=mapa.getZoom();
+
+
+if(z>0){
+
+mapa.setZoom(z-1);
+
+}
+
+}
 
 
 
@@ -319,8 +336,7 @@ if(!arquivo)return;
 
 
 
-let leitor =
-new FileReader();
+let leitor=new FileReader();
 
 
 
@@ -336,7 +352,6 @@ leitor.readAsText(arquivo);
 
 
 }
-
 
 
 
@@ -362,21 +377,18 @@ trilhas=[];
 for(let i=0;i<tracks.length;i++){
 
 
-let nome =
-"Trilha "+(i+1);
+let nome="Trilha "+(i+1);
 
 
 
 let nomeTag =
-tracks[i]
-.getElementsByTagName("name")[0];
+tracks[i].getElementsByTagName("name")[0];
 
 
 
 if(nomeTag){
 
-nome =
-nomeTag.textContent;
+nome=nomeTag.textContent;
 
 }
 
@@ -387,8 +399,7 @@ let pontos=[];
 
 
 let pts =
-tracks[i]
-.getElementsByTagName("trkpt");
+tracks[i].getElementsByTagName("trkpt");
 
 
 
@@ -397,15 +408,19 @@ for(let j=0;j<pts.length;j++){
 
 pontos.push([
 
+
 parseFloat(
 pts[j].getAttribute("lat")
 ),
+
 
 parseFloat(
 pts[j].getAttribute("lon")
 )
 
+
 ]);
+
 
 
 }
@@ -436,8 +451,7 @@ JSON.stringify(trilhas)
 
 
 alert(
-trilhas.length+
-" trilhas salvas"
+trilhas.length+" trilhas salvas"
 );
 
 
@@ -446,7 +460,6 @@ abrirLista();
 
 
 }
-
 
 
 
@@ -471,20 +484,16 @@ itens.innerHTML="";
 trilhas.forEach(function(t,i){
 
 
-let div =
-document.createElement("div");
-
+let div=document.createElement("div");
 
 
 div.className="item";
 
 
-
 div.innerHTML=
 
 "🚤 "+t.nome+
-"<br>Pontos: "+
-t.pontos.length;
+"<br>Pontos: "+t.pontos.length;
 
 
 
@@ -514,14 +523,12 @@ lista.style.display="block";
 
 function fecharLista(){
 
-
 document.getElementById("lista")
 .style.display="none";
 
-
 }
 
- function limparMapa(){
+  function limparMapa(){
 
 
 if(trilhaAtual){
@@ -529,7 +536,6 @@ if(trilhaAtual){
 mapa.removeLayer(trilhaAtual);
 
 }
-
 
 
 pontosMapa.forEach(function(p){
@@ -588,7 +594,7 @@ weight:5
 
 
 
-// pontos da trilha
+// pontos
 
 t.pontos.forEach(function(p){
 
@@ -652,17 +658,15 @@ iconSize:[30,30]
 
 
 
-
-// abre sempre neste zoom
+// abre a trilha no zoom atual escolhido
 
 mapa.setView(
 
 t.pontos[0],
 
-zoomTrilha
+mapa.getZoom()
 
 );
-
 
 
 
@@ -670,9 +674,7 @@ zoomTrilha
 // mostra Centro autom.
 
 let opcao =
-
 document.getElementById("centroGPS");
-
 
 
 opcao.style.display="block";
@@ -680,22 +682,14 @@ opcao.style.display="block";
 
 
 document.querySelector(
-
-'input[value="nao"]'
-
+'input[type="radio"]:checked'
 ).checked=true;
-
-
-
-seguirGPS=false;
 
 
 
 setTimeout(function(){
 
-
 opcao.style.display="none";
-
 
 },5000);
 
@@ -705,8 +699,6 @@ fecharLista();
 
 
 }
-
-
 
 
 
@@ -730,7 +722,6 @@ iniciarGPS();
 
 
 
-
 function iniciarGPS(){
 
 
@@ -750,20 +741,16 @@ navigator.geolocation.watchPosition(
 function(pos){
 
 
-let lat =
-pos.coords.latitude;
+let lat=pos.coords.latitude;
 
-
-let lon =
-pos.coords.longitude;
+let lon=pos.coords.longitude;
 
 
 
 if(!marcadorGPS){
 
 
-marcadorGPS =
-L.marker(
+marcadorGPS=L.marker(
 
 [lat,lon]
 
@@ -792,7 +779,7 @@ mapa.setView(
 
 [lat,lon],
 
-zoomTrilha
+mapa.getZoom()
 
 );
 
@@ -835,4 +822,3 @@ maximumAge:1000
 </body>
 
 </html>
- 
