@@ -1,5 +1,5 @@
+const CACHE = "gps-nautico-v2";
 
-const CACHE = "gps-nautico-v1";
 
 const ARQUIVOS = [
   "./",
