@@ -23,14 +23,19 @@ font-family:Arial;
 }
 
 
+
 .topo{
 
 height:60px;
+
 background:#333;
+
 color:white;
 
 display:flex;
+
 align-items:center;
+
 justify-content:center;
 
 font-size:25px;
@@ -47,11 +52,35 @@ height:calc(100vh - 140px);
 
 
 
+/* barco fixo no centro */
+
+#barcoCentro{
+
+position:absolute;
+
+top:50%;
+
+left:50%;
+
+transform:translate(-50%,-50%);
+
+font-size:45px;
+
+z-index:2500;
+
+pointer-events:none;
+
+}
+
+
+
+
 .menu{
 
 position:fixed;
 
 bottom:0;
+
 width:100%;
 
 height:80px;
@@ -182,6 +211,7 @@ display:none;
 
 }
 
+
 </style>
 
 </head>
@@ -200,6 +230,13 @@ display:none;
 <div id="mapa"></div>
 
 
+<div id="barcoCentro">
+
+🚤
+
+</div>
+
+
 
 <div id="painelZoom">
 
@@ -213,9 +250,7 @@ Zoom: <span id="valorZoom">18</span>
 
 </div>
 
-
-
-<div id="lista">
+ <div id="lista">
 
 <h2>🛥 Trilhas</h2>
 
@@ -232,9 +267,11 @@ Fechar
 
 
 
+
 <div id="centroGPS">
 
 Centro autom.
+
 
 <input type="radio"
 name="gps"
@@ -255,10 +292,13 @@ não
 
 
 
+
 <input id="arquivoGPX"
 type="file"
 accept=".gpx"
 onchange="importarGPX(event)">
+
+
 
 
 
@@ -272,6 +312,7 @@ onchange="importarGPX(event)">
 </button>
 
 
+
 <button onclick="document.getElementById('arquivoGPX').click()">
 
 📂 Importar GPX
@@ -281,10 +322,15 @@ onchange="importarGPX(event)">
 
 </div>
 
- <script>
 
 
-let mapa = L.map('mapa')
+
+
+<script>
+
+
+let mapa =
+L.map('mapa')
 .setView([-25,-48],18);
 
 
@@ -294,10 +340,14 @@ L.tileLayer(
 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
 
 {
+
 maxZoom:19
+
 }
 
 ).addTo(mapa);
+
+
 
 
 
@@ -306,8 +356,6 @@ let trilhaAtual=null;
 let pontosMapa=[];
 
 let bandeira=null;
-
-let marcadorGPS=null;
 
 let seguirGPS=false;
 
@@ -319,6 +367,7 @@ let trilhas =
 JSON.parse(
 localStorage.getItem("trilhasGPS")
 ) || [];
+
 
 
 
@@ -339,7 +388,6 @@ function zoomMais(){
 
 let z=mapa.getZoom();
 
-
 if(z<19){
 
 mapa.setZoom(z+1);
@@ -351,10 +399,10 @@ mapa.setZoom(z+1);
 
 
 
+
 function zoomMenos(){
 
 let z=mapa.getZoom();
-
 
 if(z>0){
 
@@ -379,7 +427,8 @@ if(!arquivo)return;
 
 
 
-let leitor=new FileReader();
+let leitor =
+new FileReader();
 
 
 
@@ -395,7 +444,6 @@ leitor.readAsText(arquivo);
 
 
 }
-
 
 
 
@@ -455,16 +503,13 @@ for(let j=0;j<pts.length;j++){
 
 pontos.push([
 
-
 parseFloat(
 pts[j].getAttribute("lat")
 ),
 
-
 parseFloat(
 pts[j].getAttribute("lon")
 )
-
 
 ]);
 
@@ -497,9 +542,7 @@ JSON.stringify(trilhas)
 
 
 alert(
-
 trilhas.length+" trilhas salvas"
-
 );
 
 
@@ -509,24 +552,16 @@ abrirLista();
 
 }
 
-
-
-
-
-function abrirLista(){
-
+ function abrirLista(){
 
 let lista =
 document.getElementById("lista");
-
 
 let itens =
 document.getElementById("listaItens");
 
 
-
 itens.innerHTML="";
-
 
 
 trilhas.forEach(function(t,i){
@@ -536,9 +571,7 @@ let div =
 document.createElement("div");
 
 
-
 div.className="item";
-
 
 
 div.innerHTML=
@@ -555,16 +588,13 @@ carregarTrilha(i);
 };
 
 
-
 itens.appendChild(div);
 
 
 });
 
 
-
 lista.style.display="block";
-
 
 }
 
@@ -577,7 +607,14 @@ function fecharLista(){
 document.getElementById("lista")
 .style.display="none";
 
-}function limparMapa(){
+}
+
+
+
+
+
+
+function limparMapa(){
 
 
 if(trilhaAtual){
@@ -585,7 +622,6 @@ if(trilhaAtual){
 mapa.removeLayer(trilhaAtual);
 
 }
-
 
 
 pontosMapa.forEach(function(p){
@@ -598,7 +634,6 @@ mapa.removeLayer(p);
 pontosMapa=[];
 
 
-
 if(bandeira){
 
 mapa.removeLayer(bandeira);
@@ -609,6 +644,7 @@ bandeira=null;
 
 
 }
+
 
 
 
@@ -630,14 +666,13 @@ clearTimeout(timerOpcao);
 
 timerOpcao=setTimeout(function(){
 
-
 opcao.style.display="none";
-
 
 },5000);
 
 
 }
+
 
 
 
@@ -669,6 +704,7 @@ weight:5
 }
 
 ).addTo(mapa);
+
 
 
 
@@ -707,6 +743,7 @@ pontosMapa.push(ponto);
 
 
 
+
 // bandeira
 
 bandeira =
@@ -734,7 +771,7 @@ iconSize:[30,30]
 
 
 
-// abre sempre no zoom 18
+// inicia no zoom 18
 
 mapa.setView(
 
@@ -745,9 +782,6 @@ t.pontos[0],
 );
 
 
-
-
-// mostra opção
 
 mostrarOpcao();
 
@@ -775,13 +809,15 @@ fecharLista();
 
 
 
-// tocar na tela mostra opção novamente
+
+// tocar na tela mostra opção
 
 mapa.on('click',function(){
 
 mostrarOpcao();
 
 });
+
 
 
 
@@ -807,6 +843,7 @@ iniciarGPS();
 
 
 
+
 function iniciarGPS(){
 
 
@@ -826,31 +863,35 @@ navigator.geolocation.watchPosition(
 function(pos){
 
 
-let lat=pos.coords.latitude;
-
-let lon=pos.coords.longitude;
-
+let lat =
+pos.coords.latitude;
 
 
-if(!marcadorGPS){
-
-
-marcadorGPS =
-L.marker([lat,lon])
-
-.addTo(mapa);
+let lon =
+pos.coords.longitude;
 
 
 
-}else{
+let barco =
+document.getElementById("barcoCentro");
 
 
-marcadorGPS.setLatLng([lat,lon]);
 
+// gira a seta conforme direção
+
+if(pos.coords.heading !== null){
+
+barco.style.transform =
+
+"translate(-50%,-50%) rotate("+
+pos.coords.heading+
+"deg)";
 
 }
 
 
+
+// centro automático acompanha o barco
 
 if(seguirGPS){
 
@@ -865,6 +906,7 @@ mapa.setView(
 
 
 }
+
 
 
 },
@@ -891,26 +933,21 @@ maximumAge:1000
 
 );
 
-
 }
 
 
 
 
 
-// ativar modo offline
+
+
+// modo offline
 
 if ("serviceWorker" in navigator) {
 
-window.addEventListener("load", function(){
+window.addEventListener("load",function(){
 
-navigator.serviceWorker.register("service-worker.js")
-
-.then(function(){
-
-console.log("Modo offline ativado");
-
-});
+navigator.serviceWorker.register("service-worker.js");
 
 });
 
@@ -924,5 +961,3 @@ console.log("Modo offline ativado");
 </body>
 
 </html>
-
-  
