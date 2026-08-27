@@ -9,6 +9,7 @@
 
 <title>GPS Náutico</title>
 
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -26,9 +27,11 @@ font-family:Arial;
 height:60px;
 background:#333;
 color:white;
+
 display:flex;
 align-items:center;
 justify-content:center;
+
 font-size:25px;
 }
 
@@ -45,6 +48,7 @@ position:fixed;
 bottom:0;
 width:100%;
 height:80px;
+
 background:#444;
 
 display:flex;
@@ -60,6 +64,7 @@ z-index:1000;
 button{
 
 background:#1976d2;
+
 color:white;
 
 border:0;
@@ -73,8 +78,6 @@ font-size:17px;
 }
 
 
-
-/* painel zoom */
 
 #painelZoom{
 
@@ -132,6 +135,8 @@ margin:8px;
 
 border-radius:8px;
 
+font-size:18px;
+
 }
 
 
@@ -150,13 +155,16 @@ transform:translateX(-50%);
 
 background:white;
 
-padding:12px;
+padding:12px 20px;
 
 border-radius:20px;
 
 z-index:3000;
 
+font-size:18px;
+
 }
+
 
 
 input[type=file]{
@@ -174,7 +182,9 @@ display:none;
 
 
 <div class="topo">
+
 🚤 GPS Náutico
+
 </div>
 
 
@@ -184,7 +194,7 @@ display:none;
 
 <div id="painelZoom">
 
-Zoom: <span id="valorZoom">16</span>
+Zoom: <span id="valorZoom">18</span>
 
 <br><br>
 
@@ -195,45 +205,70 @@ Zoom: <span id="valorZoom">16</span>
 </div>
 
 
+
 <div id="lista">
 
 <h2>🛥 Trilhas</h2>
 
 <div id="listaItens"></div>
 
+
 <button onclick="fecharLista()">
+
 Fechar
+
 </button>
 
 </div>
 
 
+
 <div id="centroGPS">
+
 
 Centro autom.
 
-<input type="radio" name="gps" onclick="ativarGPS(true)">
+
+<input type="radio"
+name="gps"
+onclick="ativarGPS(true)">
+
 sim
 
-<input type="radio" name="gps" checked onclick="ativarGPS(false)">
+
+<input type="radio"
+name="gps"
+checked
+onclick="ativarGPS(false)">
+
 não
+
 
 </div>
 
 
-<input id="arquivoGPX" type="file" accept=".gpx" onchange="importarGPX(event)">
+
+<input id="arquivoGPX"
+type="file"
+accept=".gpx"
+onchange="importarGPX(event)">
 
 
 
 <div class="menu">
 
+
 <button onclick="abrirLista()">
+
 🛥 Trilhas
+
 </button>
 
 
 <button onclick="document.getElementById('arquivoGPX').click()">
+
 📂 Importar GPX
+
 </button>
 
 
@@ -243,7 +278,7 @@ não
 
 
 let mapa = L.map('mapa')
-.setView([-25,-48],16);
+.setView([-25,-48],18);
 
 
 
@@ -259,6 +294,7 @@ maxZoom:19
 
 
 
+
 let trilhaAtual=null;
 
 let pontosMapa=[];
@@ -268,6 +304,9 @@ let bandeira=null;
 let marcadorGPS=null;
 
 let seguirGPS=false;
+
+let timerOpcao;
+
 
 
 let trilhas =
@@ -279,7 +318,8 @@ localStorage.getItem("trilhasGPS")
 
 
 
-// mostra o zoom atual
+
+// atualiza número do zoom
 
 mapa.on('zoomend',function(){
 
@@ -308,6 +348,7 @@ mapa.setZoom(z+1);
 
 
 
+
 function zoomMenos(){
 
 let z=mapa.getZoom();
@@ -320,6 +361,8 @@ mapa.setZoom(z-1);
 }
 
 }
+
+
 
 
 
@@ -356,6 +399,8 @@ leitor.readAsText(arquivo);
 
 
 
+
+
 function lerGPX(texto){
 
 
@@ -382,7 +427,8 @@ let nome="Trilha "+(i+1);
 
 
 let nomeTag =
-tracks[i].getElementsByTagName("name")[0];
+tracks[i]
+.getElementsByTagName("name")[0];
 
 
 
@@ -399,7 +445,8 @@ let pontos=[];
 
 
 let pts =
-tracks[i].getElementsByTagName("trkpt");
+tracks[i]
+.getElementsByTagName("trkpt");
 
 
 
@@ -420,7 +467,6 @@ pts[j].getAttribute("lon")
 
 
 ]);
-
 
 
 }
@@ -484,10 +530,13 @@ itens.innerHTML="";
 trilhas.forEach(function(t,i){
 
 
-let div=document.createElement("div");
+let div =
+document.createElement("div");
+
 
 
 div.className="item";
+
 
 
 div.innerHTML=
@@ -538,6 +587,7 @@ mapa.removeLayer(trilhaAtual);
 }
 
 
+
 pontosMapa.forEach(function(p){
 
 mapa.removeLayer(p);
@@ -564,10 +614,41 @@ bandeira=null;
 
 
 
+
+function mostrarOpcao(){
+
+
+let opcao =
+document.getElementById("centroGPS");
+
+
+opcao.style.display="block";
+
+
+clearTimeout(timerOpcao);
+
+
+
+timerOpcao=setTimeout(function(){
+
+
+opcao.style.display="none";
+
+
+},5000);
+
+
+}
+
+
+
+
+
+
 function carregarTrilha(i){
 
 
-let t = trilhas[i];
+let t=trilhas[i];
 
 
 limparMapa();
@@ -600,7 +681,6 @@ t.pontos.forEach(function(p){
 
 
 let ponto =
-
 L.circleMarker(
 
 p,
@@ -624,17 +704,14 @@ fillOpacity:1
 pontosMapa.push(ponto);
 
 
-
 });
 
 
 
 
-
-// bandeira no início
+// bandeira
 
 bandeira =
-
 L.marker(
 
 t.pontos[0],
@@ -658,7 +735,8 @@ iconSize:[30,30]
 
 
 
-// abre a trilha no zoom atual escolhido
+
+// abre sempre no zoom 18
 
 mapa.setView(
 
@@ -671,27 +749,23 @@ t.pontos[0],
 
 
 
-// mostra Centro autom.
+// mostra opção
 
-let opcao =
-document.getElementById("centroGPS");
-
-
-opcao.style.display="block";
+mostrarOpcao();
 
 
+
+// começa em NÃO
 
 document.querySelector(
-'input[type="radio"]:checked'
+
+'input[onclick="ativarGPS(false)"]'
+
 ).checked=true;
 
 
 
-setTimeout(function(){
-
-opcao.style.display="none";
-
-},5000);
+seguirGPS=false;
 
 
 
@@ -699,6 +773,24 @@ fecharLista();
 
 
 }
+
+
+
+
+
+
+
+// tocar na tela mostra novamente por 5 segundos
+
+mapa.on('click',function(){
+
+
+mostrarOpcao();
+
+
+});
+
+
 
 
 
@@ -722,6 +814,8 @@ iniciarGPS();
 
 
 
+
+
 function iniciarGPS(){
 
 
@@ -741,16 +835,20 @@ navigator.geolocation.watchPosition(
 function(pos){
 
 
-let lat=pos.coords.latitude;
+let lat =
+pos.coords.latitude;
 
-let lon=pos.coords.longitude;
+
+let lon =
+pos.coords.longitude;
 
 
 
 if(!marcadorGPS){
 
 
-marcadorGPS=L.marker(
+marcadorGPS =
+L.marker(
 
 [lat,lon]
 
@@ -779,7 +877,7 @@ mapa.setView(
 
 [lat,lon],
 
-mapa.getZoom()
+18
 
 );
 
